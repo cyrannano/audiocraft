@@ -455,3 +455,32 @@ class AudioEffects:
             tensor, get_aac, sr=sample_rate, bitrate=bitrate, lowpass_freq=lowpass_freq
         )
         return audio_effect_return(tensor=out, mask=mask)
+    
+    # @staticmethod
+    # def reverb_noise_augmentation(
+    #     tensor: torch.Tensor,
+    #     reverb_params: dict,
+    #     noise_std: float = 0.01,
+    #     mask: tp.Optional[torch.Tensor] = None,
+    # ) -> tp.Union[tp.Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
+    #     """Apply a combination of reverb and noise augmentation to the audio tensor.
+
+    #     Args:
+    #         tensor (torch.Tensor): The input audio tensor.
+    #         reverb_params (dict): Parameters for the reverb effect.
+    #         noise_std (float): Standard deviation of the Gaussian noise.
+    #         mask (tp.Optional[torch.Tensor]): Optional mask tensor.
+
+    #     Returns:
+    #         tp.Union[tp.Tuple[torch.Tensor, torch.Tensor], torch.Tensor]: Augmented audio tensor, with mask if provided.
+    #     """
+    #     # Apply reverb
+    #     reverbed_tensor, mask = AudioEffects.echo(
+    #         tensor, **reverb_params, mask=mask
+    #     )
+
+    #     # Add Gaussian noise
+    #     noise = torch.randn_like(reverbed_tensor) * noise_std
+    #     augmented_tensor = reverbed_tensor + noise
+
+    #     return audio_effect_return(tensor=augmented_tensor, mask=mask)

@@ -18,8 +18,8 @@ losses:
   mel: 0.0
   msspec: 2.0
   sisnr: 0.0
-  wm_detection: 1.0 # loss for first 2 bits cannot be 0 
-  wm_mb: 1.0  # loss for the rest of the bits (wm message)
+  wm_detection: 1.0 # loss for first 2 bits cannot be 0
+  wm_mb: 1.0 # loss for the rest of the bits (wm message)
   tf_loudnessratio: 10.0
 
 balancer:
@@ -31,7 +31,7 @@ balancer:
 crop:
   prob: 0.4
   shuffle_prob: 0.2
-  pad_prob: 0.2  # shuffle_prob + pad_prob + prob <= 1
+  pad_prob: 0.2 # shuffle_prob + pad_prob + prob <= 1
   size: 0.5
   max_n_windows: 5
 
@@ -185,12 +185,10 @@ checkpoint:
   keep_last: 10
   keep_every_states: null
 
-
-
 # optimization hyperparameters
 optim:
-  epochs: 300
-  updates_per_epoch: 2000
+  epochs: 300 # default 300
+  updates_per_epoch: 2000 # default 2000
   lr: 5e-5
   max_norm: 3.0
   optimizer: adam
@@ -203,7 +201,6 @@ optim:
     device: ${device} # device for EMA, can be put on GPU if more frequent updates
     decay: 0.99 # EMA decay value, if null, no EMA is used
 
-  
 schedule:
   lr_scheduler: "cosine"
   cosine:

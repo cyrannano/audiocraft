@@ -25,7 +25,13 @@ class ClusterType(Enum):
 
 
 def _guess_cluster_type() -> ClusterType:
-    uname = os.uname()
+    try:
+        uname = os.uname()
+    except AttributeError:
+        # os.uname is not available on Windows
+        print("os.uname is not available on Windows. Assuming default cluster type.")
+        return ClusterType.DEFAULT
+
     fqdn = socket.getfqdn()
     if uname.sysname == "Linux" and (uname.release.endswith("-aws") or ".ec2" in fqdn):
         return ClusterType.AWS

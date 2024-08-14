@@ -60,3 +60,5 @@ dataset/*
 /notebooks
 /local_scripts
 /notes
+
+activate_venv.bat

@@ -410,6 +410,7 @@ class WatermarkSolver(base.StandardSolver):
             total=updates,
             updates=self.log_updates,
         )
+        print("Running flashy averager...")
         average = flashy.averager()
 
         pendings = []
@@ -518,6 +519,7 @@ class WatermarkSolver(base.StandardSolver):
                 metrics = pending.result()
                 metrics = average(metrics)
 
+        print("Running flashy distrib average_metrics...")
         metrics = flashy.distrib.average_metrics(metrics, len(loader))
         if self.cfg.select_aug_mode == "use_eval_acc":
             # Adjust augmentation weights based on evaluation loss.
