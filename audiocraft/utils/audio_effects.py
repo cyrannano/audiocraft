@@ -456,31 +456,65 @@ class AudioEffects:
         )
         return audio_effect_return(tensor=out, mask=mask)
     
-    # @staticmethod
-    # def reverb_noise_augmentation(
-    #     tensor: torch.Tensor,
-    #     reverb_params: dict,
-    #     noise_std: float = 0.01,
-    #     mask: tp.Optional[torch.Tensor] = None,
-    # ) -> tp.Union[tp.Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
-    #     """Apply a combination of reverb and noise augmentation to the audio tensor.
+    @staticmethod
+    def reverb_noise_augmentation(
+        tensor: torch.Tensor,
+        reverb_params: dict = {"volume_range": (0.05, 0.1), "duration_range": (0.005, 0.01)},
+        noise_std: float = 0.001,
+        mask: tp.Optional[torch.Tensor] = None,
+    ) -> tp.Union[tp.Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
+        """Applies both reverb and noise augmentation to an audio tensor.
 
-    #     Args:
-    #         tensor (torch.Tensor): The input audio tensor.
-    #         reverb_params (dict): Parameters for the reverb effect.
-    #         noise_std (float): Standard deviation of the Gaussian noise.
-    #         mask (tp.Optional[torch.Tensor]): Optional mask tensor.
+        Args:
+            tensor (torch.Tensor): The input audio tensor.
+            reverb_params (dict): Parameters for the reverb effect, containing volume_range
+                and duration_range.
+            noise_std (float): The standard deviation of the Gaussian noise to be added.
+            mask (Optional[torch.Tensor]): The mask tensor if present.
 
-    #     Returns:
-    #         tp.Union[tp.Tuple[torch.Tensor, torch.Tensor], torch.Tensor]: Augmented audio tensor, with mask if provided.
-    #     """
-    #     # Apply reverb
-    #     reverbed_tensor, mask = AudioEffects.echo(
-    #         tensor, **reverb_params, mask=mask
-    #     )
+        Returns:
+            Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]: The augmented audio tensor,
+            with or without the mask depending on the input.
+        """
+        # Add a batch dimension if it is missing
+        if tensor.dim() == 2:
+            tensor = tensor.unsqueeze(0)
 
-    #     # Add Gaussian noise
-    #     noise = torch.randn_like(reverbed_tensor) * noise_std
-    #     augmented_tensor = reverbed_tensor + noise
+        # Apply reverb
+        duration = torch.FloatTensor(1).uniform_(*reverb_params["duration_range"])
+        volume = torch.FloatTensor(1).uniform_(*reverb_params["volume_range"])
 
-    #     return audio_effect_return(tensor=augmented_tensor, mask=mask)
+        n_samples = int(tensor.size(-1) * duration)
+        impulse_response = torch.zeros(n_samples).type(tensor.type()).to(tensor.device)
+
+        # Direct sound
+        impulse_response[0] = 1.0
+        impulse_response[int(n_samples * 0.5)] = volume
+
+        # Add batch and channel dimensions to the impulse response
+        impulse_response = impulse_response.unsqueeze(0).unsqueeze(0)
+
+        # Convolve the audio signal with the impulse response
+        reverbed_signal = fft_conv1d(tensor, impulse_response)
+
+        # Normalize the amplitude
+        reverbed_signal = (
+            reverbed_signal
+            / torch.max(torch.abs(reverbed_signal))
+            * torch.max(torch.abs(tensor))
+        )
+
+        # Ensure tensor size is not changed
+        tmp = torch.zeros_like(tensor)
+        tmp[..., : reverbed_signal.shape[-1]] = reverbed_signal
+        reverbed_signal = tmp
+
+        # Apply noise
+        noise = torch.randn_like(reverbed_signal) * noise_std
+        augmented_signal = reverbed_signal + noise
+
+        # Remove the batch dimension if it was added earlier
+        if augmented_signal.size(0) == 1:
+            augmented_signal = augmented_signal.squeeze(0)
+
+        return audio_effect_return(tensor=augmented_signal, mask=mask)

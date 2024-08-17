@@ -152,12 +152,12 @@ dataset:
   num_workers: 10
   segment_duration: 1
   train:
-    num_samples: 500000
+    num_samples: 804
   valid:
-    num_samples: 10000
+    num_samples: 10
   evaluate:
     batch_size: 16
-    num_samples: 10000
+    num_samples: 10
     segment_duration: 10
 
   generate:
